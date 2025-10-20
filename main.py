@@ -23,20 +23,13 @@ def fetch_youtube_data(url: str):
         if not data or "items" not in data or "title" not in data:
             raise ValueError("Invalid or empty response from YouTube downloader API")
 
-        return {
-            "title": data["title"],
-            "thumbnail": data.get("cover"),
-            "duration": data.get("duration"),
-            "formats": [
-                {
-                    "type": item.get("type"),
-                    "quality": item.get("label", "unknown"),
-                    "extension": item.get("ext") or item.get("extension", "unknown"),
-                    "url": item.get("url"),
-                }
-                for item in data.get("items", [])
-            ],
-        }
+        video_url = (
+            data.get("data", {})
+            .get("items", [{}])[0]
+            .get("url")
+        )
+
+        return video_url
 
     except requests.RequestException as e:
         raise RuntimeError(f"YouTube downloader request failed: {e}")
