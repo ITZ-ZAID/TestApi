@@ -19,7 +19,7 @@ def ytd(url):
 
     url_params = {
         "v": video_id,
-        "f": "mp4",
+        "f": "mp3",
         "_": random.random()
     }
 
