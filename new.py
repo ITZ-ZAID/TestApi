@@ -1,0 +1,53 @@
+import asyncio
+import random
+import requests
+from urllib.parse import urlparse, parse_qs, urlencode
+
+async def delay(ms):
+    await asyncio.sleep(ms / 1000)
+
+async def ytd(url):
+    headers = {"Referer": "https://id.ytmp3.mobi/"}
+    video_id = None
+
+    # Parse the YouTube URL
+    try:
+        parsed = urlparse(url)
+        if parsed.hostname == "youtu.be":
+            video_id = parsed.path.lstrip("/")
+        elif "youtube.com" in parsed.hostname:
+            video_id = parse_qs(parsed.query).get("v", [None])[0]
+    except Exception:
+        raise ValueError("Invalid YouTube URL")
+
+    if not video_id:
+        raise ValueError("Couldn't extract video ID")
+
+    url_params = {
+        "v": video_id,
+        "f": "mp4",
+        "_": random.random()
+    }
+
+    # Step 1: Initialize
+    init_url = f"https://d.ymcdn.org/api/v1/init?p=y&23=1llum1n471&_={random.random()}"
+    init_data = requests.get(init_url, headers=headers).json()
+
+    # Step 2: Build convert URL
+    full_convert_url = f"{init_data['convertURL']}&{urlencode(url_params)}"
+    convert_data = requests.get(full_convert_url, headers=headers).json()
+
+    # Step 3: Poll for progress
+    while True:
+        prog = requests.get(convert_data["progressURL"], headers=headers).json()
+        if "error" in prog and prog["error"]:
+            raise Exception(f"Convert failed: {prog['error']}")
+        if prog.get("progress") == 3:
+            return {
+                "title": prog.get("title"),
+                "url": convert_data.get("downloadURL")
+            }
+        await delay(1000)
+
+# Example usage
+asyncio.run(ytd("https://youtu.be/bq96s64K2YM"))
