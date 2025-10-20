@@ -21,7 +21,7 @@ def fetch_youtube_data(youtube_url: str):
         # Send request
         response = requests.get(full_url, headers=headers, timeout=30)
         response.raise_for_status()
-        
+        data = response.json()
         video_url = (
             data.get("data", {})
             .get("items", [{}])[0]
