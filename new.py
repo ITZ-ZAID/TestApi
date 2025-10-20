@@ -50,4 +50,9 @@ def ytd(url):
         await delay(1000)
 
 # Example usage
-ytd("https://youtu.be/bq96s64K2YM"))
+
+try:
+    geturl = ytd("https://youtu.be/bq96s64K2YM"))
+    print(geturl)
+except Exception as e:
+    print("Error:", e)
