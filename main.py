@@ -2,7 +2,7 @@
 import requests
 import urllib.parse
 
-def fetch_youtube_data(url: str):
+def fetch_youtube_data(youtube_url: str):
     try:
         encoded_url = urllib.parse.quote(youtube_url, safe='')
 
