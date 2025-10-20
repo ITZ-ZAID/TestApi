@@ -1,5 +1,6 @@
 # youtube_service.py
 import requests
+import urllib.parse
 
 def fetch_youtube_data(url: str):
     try:
