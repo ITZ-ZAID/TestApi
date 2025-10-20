@@ -6,7 +6,7 @@ from urllib.parse import urlparse, parse_qs, urlencode
 async def delay(ms):
     await asyncio.sleep(ms / 1000)
 
-async def ytd(url):
+def ytd(url):
     headers = {"Referer": "https://id.ytmp3.mobi/"}
     video_id = None
 
@@ -50,4 +50,4 @@ async def ytd(url):
         await delay(1000)
 
 # Example usage
-asyncio.run(ytd("https://youtu.be/bq96s64K2YM"))
+ytd("https://youtu.be/bq96s64K2YM"))
