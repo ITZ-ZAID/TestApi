@@ -3,31 +3,31 @@ import requests
 
 def fetch_youtube_data(url: str):
     try:
-        response = requests.get(
-            "https://api.vidfly.ai/api/media/youtube/download",
-            params={"url": url},
-            headers={
-                "accept": "*/*",
-                "content-type": "application/json",
-                "x-app-name": "vidfly-web",
-                "x-app-version": "1.0.0",
-                "Referer": "https://vidfly.ai/",
-            },
-            timeout=30,
-        )
+        encoded_url = urllib.parse.quote(youtube_url, safe='')
 
+        # Build request
+        full_url = f"https://api.vidfly.ai/api/media/youtube/download?url={encoded_url}"
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            ),
+            "Accept": "application/json",
+        }
+
+        # Send request
+        response = requests.get(full_url, headers=headers, timeout=30)
         response.raise_for_status()
-        data = response.json().get("data", {})
-
-        # Validate response structure
-        if not data or "items" not in data or "title" not in data:
-            raise ValueError("Invalid or empty response from YouTube downloader API")
-
+        
         video_url = (
             data.get("data", {})
             .get("items", [{}])[0]
             .get("url")
         )
+        if not video_url:
+            raise ValueError("Video URL not found")
 
         return video_url
 
