@@ -1,6 +1,8 @@
 # youtube_service.py
 import requests
 import urllib.parse
+import os
+from download import download
 
 def fetch_youtube_data(youtube_url: str):
     try:
@@ -38,6 +40,10 @@ def fetch_youtube_data(youtube_url: str):
 video_url = "https://youtu.be/HBj4OSE3F6g"
 try:
     result = fetch_youtube_data(video_url)
-    print(result)
+    save_folder = "downloads"
+    os.makedirs(save_folder, exist_ok=True)
+    file_name = "my_video_thumbnail.webp"
+    output_path = os.path.join(save_folder, file_name)
+    download(result, output_path, replace=True)
 except Exception as e:
     print("Error:", e)
