@@ -46,7 +46,7 @@ def ytd(url):
 # Example usage
 
 try:
-    geturl = ytd("https://youtu.be/bq96s64K2YM")
+    geturl = ytd("https://youtu.be/bx5FE8vy8Ag")
     print(geturl)
 except Exception as e:
     print("Error:", e)
