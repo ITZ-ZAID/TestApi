@@ -1,14 +1,15 @@
-# youtube_service.py
 import requests
 import urllib.parse
-import os
-from download import download
+import asyncio
 
-def fetch_youtube_data(youtube_url: str):
+async def fetch_youtube_data(youtube_url: str) -> str | None:
+    """
+    Query vidfly.ai for a direct media URL for the given YouTube link.
+    Returns the media URL on success, or None on failure.
+    """
     try:
-        encoded_url = urllib.parse.quote(youtube_url, safe='')
+        encoded_url = urllib.parse.quote(youtube_url, safe="")
 
-        # Build request
         full_url = f"https://api.vidfly.ai/api/media/youtube/download?url={encoded_url}"
 
         headers = {
@@ -20,30 +21,22 @@ def fetch_youtube_data(youtube_url: str):
             "Accept": "application/json",
         }
 
-        # Send request
-        response = requests.get(full_url, headers=headers, timeout=30)
-        response.raise_for_status()
-        data = response.json()
+        loop = asyncio.get_running_loop()
+        resp = await loop.run_in_executor(
+            None, lambda: requests.get(full_url, headers=headers, timeout=30)
+        )
+        resp.raise_for_status()
+        data = resp.json()
         video_url = (
-            data.get("data", {})
-            .get("items", [{}])[0]
-            .get("url")
+            data.get("data", {}).get("items", [{}])[0].get("url")
         )
         if not video_url:
-            raise ValueError("Video URL not found")
+            return None
 
         return video_url
 
-    except requests.RequestException as e:
-        raise RuntimeError(f"YouTube downloader request failed: {e}")
+    except Exception:
+        return None
 
-video_url = "https://youtu.be/HBj4OSE3F6g"
-try:
-    result = fetch_youtube_data(video_url)
-    save_folder = "downloads"
-    os.makedirs(save_folder, exist_ok=True)
-    file_name = "my_video_thumbnail.webp"
-    output_path = os.path.join(save_folder, file_name)
-    download(result, output_path, replace=True)
-except Exception as e:
-    print("Error:", e)
+
+asyncio.run(fetch_youtube_data("https://youtu.be/Fk50lCFkl1g"))
