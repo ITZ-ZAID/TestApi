@@ -33,7 +33,7 @@ async def fetch_youtube_data(youtube_url: str) -> str | None:
         if not video_url:
             return None
 
-        return video_url
+        return print(video_url)
 
     except Exception:
         return None
