@@ -28,7 +28,7 @@ async def fetch_youtube_data(youtube_url: str) -> str | None:
         resp.raise_for_status()
         data = resp.json()
         video_url = (
-            data.get("data", {}).get("items", [{}])[12].get("url")
+            data.get("data", {}).get("items", [{}])[13].get("url")
         )
         if not video_url:
             return None
