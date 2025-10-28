@@ -1,7 +1,8 @@
 import asyncio, aiohttp, os, random
 from urllib.parse import urlparse, parse_qs, urlencode
 
-async def ytd(url, folder="downloads"):
+async def ytd(url):
+    folder= "downloads"
     parsed = urlparse(url)
     vid = parsed.path.lstrip("/") if "youtu.be" in url else parse_qs(parsed.query).get("v", [None])[0]
     if not vid:
@@ -10,7 +11,6 @@ async def ytd(url, folder="downloads"):
     os.makedirs(folder, exist_ok=True)
     path = os.path.join(folder, f"{vid}.mp3")
     if os.path.exists(path):
-        print(f"⚡ File already exists: {path}")
         return path
 
     headers = {"Referer": "https://id.ytmp3.mobi/"}
@@ -30,5 +30,5 @@ async def ytd(url, folder="downloads"):
             await asyncio.sleep(1)
 
 # 🔹 One simple call
-asyncio.run(ytd("https://youtu.be/bq96s64K2YM", folder="MyMP3s"))
+asyncio.run(ytd("https://youtu.be/bq96s64K2YM"))
                 
