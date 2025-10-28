@@ -1,59 +1,25 @@
-import asyncio
-import random
-import aiohttp
+import asyncio, aiohttp, os, random
 from urllib.parse import urlparse, parse_qs, urlencode
 
-async def ytd(url):
+async def ytd(url, folder="downloads"):
+    vid = (urlparse(url).path.lstrip("/") if "youtu.be" in url 
+           else parse_qs(urlparse(url).query).get("v", [None])[0])
+    if not vid: raise ValueError("Invalid YouTube URL")
+
+    os.makedirs(folder, exist_ok=True)
     headers = {"Referer": "https://id.ytmp3.mobi/"}
-    video_id = None
-
-    # Parse YouTube URL
-    parsed = urlparse(url)
-    if parsed.hostname == "youtu.be":
-        video_id = parsed.path.lstrip("/")
-    elif parsed.hostname and "youtube.com" in parsed.hostname:
-        video_id = parse_qs(parsed.query).get("v", [None])[0]
-
-    if not video_id:
-        raise ValueError("Couldn't extract video ID")
-
-    url_params = {
-        "v": video_id,
-        "f": "mp3",
-        "_": random.random()
-    }
-
-    async with aiohttp.ClientSession(headers=headers) as session:
-        # Step 1: Init
-        init_url = f"https://d.ymcdn.org/api/v1/init?p=y&23=1llum1n471&_={random.random()}"
-        async with session.get(init_url) as resp:
-            init_data = await resp.json()
-
-        # Step 2: Convert
-        full_convert_url = f"{init_data['convertURL']}&{urlencode(url_params)}"
-        async with session.get(full_convert_url) as resp:
-            convert_data = await resp.json()
-
-        # Step 3: Poll progress
+    async with aiohttp.ClientSession(headers=headers) as s:
+        init = await (await s.get(f"https://d.ymcdn.org/api/v1/init?p=y&_={random.random()}")).json()
+        conv = await (await s.get(f"{init['convertURL']}&{urlencode({'v': vid, 'f': 'mp3', '_': random.random()})}")).json()
         while True:
-            async with session.get(convert_data["progressURL"]) as resp:
-                prog = await resp.json()
-            if "error" in prog and prog["error"]:
-                raise Exception(f"Convert failed: {prog['error']}")
+            prog = await (await s.get(conv["progressURL"])).json()
             if prog.get("progress") == 3:
-                return {
-                    "title": prog.get("title"),
-                    "url": convert_data.get("downloadURL")
-                }
+                title = "".join(c for c in prog.get("title", vid) if c.isalnum() or c in " _-")
+                async with s.get(conv["downloadURL"]) as r, open(os.path.join(folder, f"{title}.mp3"), "wb") as f:
+                    while chunk := await r.content.read(1024): f.write(chunk)
+                print(f"✅ {title}.mp3 saved in '{folder}'")
+                break
             await asyncio.sleep(1)
 
-# Example usage
-async def main():
-    try:
-        geturl = await ytd("https://youtu.be/bq96s64K2YM")
-        print(geturl)
-    except Exception as e:
-        print("Error:", e)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# 🔹 Just one call
+asyncio.run(ytd("https://youtu.be/bq96s64K2YM", folder="MyMP3s"))
