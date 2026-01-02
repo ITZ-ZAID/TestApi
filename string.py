@@ -16,13 +16,10 @@ async def handler(client, message):
     print("💬 Message from 42777:", message.text or message.caption)
 
 async def main():
-    await app.start()
-
-    me = await app.get_me()
-    print("✅ Login Successful")
-    print("📱 My Number:", me.phone_number)
-    print("🆔 My ID:", me.id)
-
-    await idle()
+    async with app:
+        me = await app.get_me()
+        print("✅ Logged in")
+        print("📱 My Number:", me.phone_number)
+        await idle()
 
 app.run(main())
